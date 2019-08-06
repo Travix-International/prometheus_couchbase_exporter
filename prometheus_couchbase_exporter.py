@@ -83,13 +83,16 @@ class CouchbaseCollector(object):
     Collect each metric defined in external module statsmetrics
     """
     def collect(self):
-        for api_key,api_values in self.metrics.items():
-            # Request data for each url
-            couchbase_data = self._request_data(self.BASE_URL + api_values['url'])
-            self._collect_metrics(api_key, api_values, couchbase_data)
+        try:
+            for api_key,api_values in self.metrics.items():
+                # Request data for each url
+                couchbase_data = self._request_data(self.BASE_URL + api_values['url'])
+                self._collect_metrics(api_key, api_values, couchbase_data)
 
-        for gauge_name, gauge in self.gauges.items():
-            yield gauge
+            for gauge_name, gauge in self.gauges.items():
+                yield gauge
+        except Exception as e:
+            print("Exception: " + str(e))
 
 """
 Parse optional arguments
@@ -117,15 +120,17 @@ def parse_args():
     )
     return parser.parse_args()
 
-#if __name__ == '__main__':
 def main():
-	try:
-		args = parse_args()
-		port = int(args.port)
-		REGISTRY.register(CouchbaseCollector(args.couchbase))
-		start_http_server(port)
-		print "Serving at port: ", port
-		while True: time.sleep(1)
-	except KeyboardInterrupt:
-		print(" Interrupted")
-		exit(0)
+    try:
+        args = parse_args()
+        port = int(args.port)
+        REGISTRY.register(CouchbaseCollector(args.couchbase))
+        start_http_server(port)
+        print ("Serving at port: " + str(port))
+        while True: time.sleep(1)
+    except Exception as e:
+        print("Exception: " + str(e))
+        exit(0)
+
+if __name__ == '__main__':
+    main()
